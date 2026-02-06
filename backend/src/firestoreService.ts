@@ -2,7 +2,7 @@
  * Firestore Database Wrapper
  *
  * Provides a type-safe, centralized interface for all Firestore operations.
- * Import { firestoreService } and use its methods instead of calling db directly.
+ * Import the default `firestoreService` and use its methods instead of calling db directly.
  */
 
 import {
@@ -55,8 +55,8 @@ export type WhereFilter = {
  */
 function snapshotToArray<T = DocumentData>(snapshot: QuerySnapshot<T>): FirestoreDoc<T>[] {
   return snapshot.docs.map((doc) => ({
-    id: doc.id,
     ...doc.data(),
+    id: doc.id,
   }));
 }
 
@@ -100,7 +100,7 @@ const firestoreService = {
     collectionPath: string,
     docId: string,
     data: DocumentData,
-    options?: { merge: boolean },
+    options?: { merge?: boolean },
   ): Promise<WriteResult> {
     return db
       .collection(collectionPath)
@@ -119,7 +119,7 @@ const firestoreService = {
   ): Promise<FirestoreDoc<T> | null> {
     const snap = await db.collection(collectionPath).doc(docId).get();
     if (!snap.exists) return null;
-    return { id: snap.id, ...(snap.data() as T) };
+    return { ...(snap.data() as T), id: snap.id };
   },
 
   /** Check whether a document exists. */
@@ -135,7 +135,7 @@ const firestoreService = {
     collectionPath: string,
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
-    let query: Query = db.collection(collectionPath);
+    let query: Query<T> = db.collection(collectionPath) as CollectionReference<T>;
 
     if (options.orderBy) {
       query = query.orderBy(options.orderBy, options.orderDirection ?? "asc");
@@ -145,6 +145,10 @@ const firestoreService = {
       const cursor = await db.collection(collectionPath).doc(options.startAfterDocId).get();
       if (cursor.exists) {
         query = query.startAfter(cursor);
+      } else {
+        throw new Error(
+          `Invalid pagination cursor: document "${options.startAfterDocId}" does not exist in collection "${collectionPath}".`,
+        );
       }
     }
 
@@ -165,7 +169,7 @@ const firestoreService = {
     filters: WhereFilter[],
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
-    let query: Query = db.collection(collectionPath);
+    let query: Query<T> = db.collection(collectionPath) as CollectionReference<T>;
 
     for (const f of filters) {
       query = query.where(f.field, f.op, f.value);
@@ -191,7 +195,7 @@ const firestoreService = {
     filter: Filter,
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
-    let query: Query = db.collection(collectionPath).where(filter);
+    let query: Query<T> = (db.collection(collectionPath) as CollectionReference<T>).where(filter);
 
     if (options.orderBy) {
       query = query.orderBy(options.orderBy, options.orderDirection ?? "asc");
