@@ -4,6 +4,8 @@ A modern movie tracking platform where you log films, rate and review them, rank
 
 ## Setup
 
+#todo
+
 ### Tools
 
 Before starting development, make sure you have these tools installed:
