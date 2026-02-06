@@ -239,48 +239,6 @@ const firestoreService = {
     return db.collection(collectionPath).doc(docId).delete();
   },
 
-  /**
-   * Delete all documents in a collection (or matching a query) using batched writes.
-   * Handles collections of any size by processing in chunks of 500.
-   */
-  async deleteCollection(collectionPath: string, filters: WhereFilter[] = []): Promise<number> {
-    const BATCH_SIZE = 500;
-    let totalDeleted = 0;
-
-    let query: Query = db.collection(collectionPath);
-    for (const f of filters) {
-      query = query.where(f.field, f.op, f.value);
-    }
-
-    const commitPromises: Promise<void>[] = [];
-
-    const processBatch = async (): Promise<void> => {
-      const snapshot = await query.limit(BATCH_SIZE).get();
-      if (snapshot.empty) return;
-
-      const batch: WriteBatch = db.batch();
-      snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-      commitPromises.push(
-        batch
-          .commit()
-          .then(() => {
-            console.log(
-              `Deleted batch of ${snapshot.size.toString()} documents from ${collectionPath}`,
-            );
-          })
-          .catch((err: unknown) => {
-            console.error("Error deleting batch: ", err);
-          }),
-      );
-      totalDeleted += snapshot.size;
-      await processBatch();
-    };
-
-    await processBatch();
-    await Promise.all(commitPromises);
-    return totalDeleted;
-  },
-
   // -------------------------------------------------------------------------
   // Batch & Transaction
   // -------------------------------------------------------------------------
