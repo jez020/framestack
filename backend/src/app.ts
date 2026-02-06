@@ -13,7 +13,7 @@ app.use(json());
 // Tell app to listen on our port environment variable
 app.listen(port, () => {
   console.log(`> Listening on port ${port}`);
-  // Ensure Firebase is initialized
+  // Import db to trigger Firebase initialization (side effect)
   void db;
   console.log(`> Firestore initialized`);
 });

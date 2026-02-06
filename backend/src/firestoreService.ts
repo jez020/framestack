@@ -135,6 +135,8 @@ const firestoreService = {
     collectionPath: string,
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
+    // Type assertion assumes collection contains documents of type T.
+    // Firestore does not validate types at runtime.
     let query: Query<T> = db.collection(collectionPath) as CollectionReference<T>;
 
     if (options.orderBy) {
@@ -169,6 +171,8 @@ const firestoreService = {
     filters: WhereFilter[],
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
+    // Type assertion assumes collection contains documents of type T.
+    // Firestore does not validate types at runtime.
     let query: Query<T> = db.collection(collectionPath) as CollectionReference<T>;
 
     for (const f of filters) {
@@ -195,6 +199,8 @@ const firestoreService = {
     filter: Filter,
     options: ListOptions = {},
   ): Promise<FirestoreDoc<T>[]> {
+    // Type assertion assumes collection contains documents of type T.
+    // Firestore does not validate types at runtime.
     let query: Query<T> = (db.collection(collectionPath) as CollectionReference<T>).where(filter);
 
     if (options.orderBy) {
