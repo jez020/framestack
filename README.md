@@ -9,6 +9,7 @@ A modern movie tracking platform where you log films, rate and review them, rank
 1. Clone the repository to your local machine.
 2. Open the project in your preferred editor.
 3. Follow the backend and frontend setup steps below to install dependencies and start the app.
+
 ### Tools
 
 Before starting development, make sure you have these tools installed:
